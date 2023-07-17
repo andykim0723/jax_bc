@@ -4,7 +4,7 @@ import jax
 import flax
 from jax import numpy as jnp
 
-from andykim_jax.common import Model
+from jaxbc.modules.common import Model
 
 Params = flax.core.FrozenDict[str, Any]
 
@@ -38,9 +38,7 @@ def bc_mlp_updt(
 			deterministic=False,
 			training=True,
 		)
-		jax.debug.print("target_action: {x} 🤯", x=target_actions)
 		pred_actions = pred_actions.reshape(-1, action_dim) * maskings
-		jax.debug.print("pred_action: {x} 🤯", x=pred_actions)
 		mse_loss = jnp.sum(jnp.mean((pred_actions - target_actions) ** 2, axis=-1)) / jnp.sum(maskings)
 
 		_infos = {

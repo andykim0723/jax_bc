@@ -1,0 +1,6 @@
+[submodule "jax-resnet"]
+	path = jax-resnet
+	url = https://github.com/n2cholas/jax-resnet
+[submodule "RLBench"]
+	path = RLBench
+	url = https://github.com/stepjam/RLBench

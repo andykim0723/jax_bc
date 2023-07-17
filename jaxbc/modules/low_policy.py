@@ -9,10 +9,10 @@ import optax
 
 from flax.linen.module import init
 
-from andykim_jax.common import Model
-from andykim_jax.updates import bc_mlp_updt
-from andykim_jax.bcmlp import PrimBCMLP
-from andykim_jax.forwards import resnet18_mlp_forward as fwd
+from jaxbc.modules.common import Model
+from jaxbc.modules.updates import bc_mlp_updt
+from jaxbc.modules.bcmlp import PrimBCMLP
+from jaxbc.modules.forwards import resnet18_mlp_forward as fwd
 
 
 class MLPpolicy():

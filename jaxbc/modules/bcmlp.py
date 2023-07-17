@@ -5,15 +5,15 @@ import jax.numpy as jnp
 
 from jax_resnet import ResNet18
 
-from andykim_jax.type_aliases import (
+from jaxbc.modules.type_aliases import (
 	PRNGKey,
 	Shape,
 	Dtype,
 	Array
 )
 
-from andykim_jax.common import Scaler
-from andykim_jax.common import create_mlp
+from jaxbc.modules.common import Scaler
+from jaxbc.modules.common import create_mlp
 
 
 class PrimBCMLP(nn.Module):

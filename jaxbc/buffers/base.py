@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Optional, Union, Tuple
 
 import numpy as np
-from stable_baselines3.common.vec_env import VecNormalize
+# from stable_baselines3.common.vec_env import VecNormalize
 
 
 try:
@@ -85,7 +85,7 @@ class BaseBuffer(ABC):
 	def __init__(
 		self,
 		buffer_size: int,
-		env: Optional[VecNormalize],
+		env,
 		n_envs: int = 1
 	):
 		super(BaseBuffer, self).__init__()
@@ -150,8 +150,8 @@ class BaseBuffer(ABC):
 
 	def sample(
 		self,
+		env,
 		batch_size: int = None,
-		env: Optional[VecNormalize] = None,
 		batch_inds: np.ndarray = None,
 		get_batch_inds: bool = False
 	):
@@ -175,7 +175,7 @@ class BaseBuffer(ABC):
 		self,
 		batch_inds: np.ndarray,
 		env_inds: np.ndarray,
-		env: Optional[VecNormalize] = None,
+		env,
 		get_batch_inds: bool = False
 	):
 		raise NotImplementedError()
@@ -183,14 +183,14 @@ class BaseBuffer(ABC):
 	@staticmethod
 	def _normalize_obs(
 		obs: Union[np.ndarray, Dict[str, np.ndarray]],
-		env: Optional[VecNormalize] = None,
+		env,
 	) -> Union[np.ndarray, Dict[str, np.ndarray]]:
 		if env is not None:
 			return env.normalize_obs(obs)
 		return obs
 
 	@staticmethod
-	def _normalize_reward(reward: np.ndarray, env: Optional[VecNormalize] = None) -> np.ndarray:
+	def _normalize_reward(reward: np.ndarray, env = None) -> np.ndarray:
 		if env is not None:
 			return env.normalize_reward(reward).astype(np.float32)
 		return reward

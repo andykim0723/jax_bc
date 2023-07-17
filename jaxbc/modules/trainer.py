@@ -1,6 +1,6 @@
 from typing import Dict
 # from andykim_jax.model import Model
-from andykim_jax.low_policy import MLPpolicy
+from jaxbc.modules.low_policy import MLPpolicy
 
 ### class trainer ###
 
@@ -27,7 +27,7 @@ class BCTrainer():
 
     def run(self,replay_buffer):
         for _ in range(len(replay_buffer)//self.batch_size):
-            replay_data = replay_buffer.sample(self.batch_size)
+            replay_data = replay_buffer.sample(batch_size = self.batch_size)
 
             info = self.low_policy.update(replay_data)
             self.n_update += 1

@@ -3,8 +3,8 @@ from typing import Tuple
 import jax
 from jax import numpy as jnp
 
-from andykim_jax.common import Model
-from andykim_jax.type_aliases import PRNGKey
+from jaxbc.modules.common import Model
+from jaxbc.modules.type_aliases import PRNGKey
 
 @jax.jit
 def resnet18_mlp_forward(

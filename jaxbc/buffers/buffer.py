@@ -5,9 +5,9 @@ from typing import Dict, Optional, Union, Tuple, List
 import h5py
 import numpy as np
 from jax.tree_util import tree_map
-from stable_baselines3.common.vec_env import VecNormalize
+# from stable_baselines3.common.vec_env import VecNormalize
 
-from andykim_jax.buffers.base import BaseBuffer
+from jaxbc.buffers.base import BaseBuffer
 # from comde.rl.buffers.buffers.episodic import EpisodicMaskingBuffer
 # from comde.rl.buffers.episodes.source_target_skill import SourceTargetSkillContainedEpisode
 # from comde.rl.buffers.episodes.source_target_state import SourceStateEpisode
@@ -29,7 +29,7 @@ class BCBuffer(BaseBuffer):
         self,
         buffer_size: int,
         subseq_len: int,
-        env: Optional[VecNormalize] = None,
+        env = None, 
         n_envs: int = 1
         ):
         # observation_space = env.observation_space
@@ -117,8 +117,8 @@ class BCBuffer(BaseBuffer):
 
     def sample(
         self,
+        env = None,
         batch_size: int = None,
-        env: Optional[VecNormalize] = None,
         batch_inds: np.ndarray = None,
         get_batch_inds: bool = False
     ):
@@ -131,9 +131,12 @@ class BCBuffer(BaseBuffer):
         :return:
         """
         upper_bound = self.buffer_size if self.full else self.pos
+
         if batch_inds is None:
             batch_inds = np.random.randint(0, upper_bound, size=batch_size)
+ 
         env_inds = np.random.randint(0, high=self.n_envs, size=(len(batch_inds),))
+
 
         return self._get_samples(batch_inds, env_inds=env_inds, env=env, get_batch_inds=get_batch_inds)
 
@@ -141,7 +144,7 @@ class BCBuffer(BaseBuffer):
         self,
         batch_inds: np.ndarray,
         env_inds: np.ndarray,
-        env: Optional[VecNormalize] = None,
+        env,
         get_batch_inds: bool = False
     ):
 
@@ -170,7 +173,7 @@ class BCBuffer(BaseBuffer):
     @staticmethod
     def _normalize_obs(
         obs: Union[np.ndarray, Dict[str, np.ndarray]],
-        env: Optional[VecNormalize] = None,
+        env,
     ) -> Union[np.ndarray, Dict[str, np.ndarray]]:
         if env is not None:
             return env.normalize_obs(obs)

@@ -10,7 +10,7 @@ import jax.numpy as jnp
 import optax
 
 
-from andykim_jax.type_aliases import (
+from jaxbc.modules.type_aliases import (
 	PRNGKey,
 	Shape,
 	Dtype,
