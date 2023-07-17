@@ -1,17 +1,19 @@
 # jax_bc
 
-## dependencies
----
+**jax dependencies**
+
+need to match cuda, cudnn version when installing jax,flax:
+
 jax==0.4.6 \
-jaxlib==0.4.6 \
+jaxlib==0.4.6+cuda11.cudnn82 \
 flax==0.7.0 
 
-## RLBench
+
 ---
 
-**running headless**
+**headless mode for RLBench**
 ```
-python startx.py
+python jaxbc/utils/startx.py
 export DISPLAY=:0.0                                            
 nohup sudo X & 
 ```
