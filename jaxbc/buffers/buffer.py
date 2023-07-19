@@ -112,8 +112,6 @@ class BCBuffer(BaseBuffer):
         dummy_common = np.expand_dims(np.zeros(shape=(1,)),axis=0)
 
         # 'rewards', 'terminals'
-
-
         # preprocess data and add it to buffer
         for episode in episodes:
             episode['obs'] = episode.pop('observations')

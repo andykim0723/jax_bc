@@ -35,6 +35,8 @@ nohup sudo X &
 **run command**
 ```
 python bc.py
+
+# verify BC model on 
 ```
 
 
