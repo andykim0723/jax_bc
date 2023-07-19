@@ -8,13 +8,7 @@ from jax.tree_util import tree_map
 # from stable_baselines3.common.vec_env import VecNormalize
 
 from jaxbc.buffers.base import BaseBuffer
-# from comde.rl.buffers.buffers.episodic import EpisodicMaskingBuffer
-# from comde.rl.buffers.episodes.source_target_skill import SourceTargetSkillContainedEpisode
-# from comde.rl.buffers.episodes.source_target_state import SourceStateEpisode
-# from comde.rl.buffers.type_aliases import ComDeBufferSample
-# from comde.rl.envs.base import ComdeSkillEnv
-# from comde.rl.envs.utils.skill_to_vec import SkillInfoEnv
-# from comde.utils.common.misc import get_params_for_skills
+from gym import spaces
 
 ### data format ###
 # data = {
@@ -34,17 +28,23 @@ class BCBuffer(BaseBuffer):
         ):
         # observation_space = env.observation_space
         # action_space = env.action_space
-        observation_space = None
-        action_space = None
+
         self.env = env
         self.buffer_size = buffer_size
-        self.observation_space = observation_space
-        self.action_space = action_space
-		# self.obs_shape = get_obs_shape(observation_space)
-		# self.action_dim = get_action_dim(action_space)
+              
+        if env is None:
+            self.observation_space = None
+            self.action_space = None
+        else: 
+            self.observation_space = env.observation_space
+            self.action_space = env.action_space
+        
+        if isinstance(self.observation_space, spaces.Box):
+            self.observation_dim = self.observation_space.shape
 
-        self.observation_dim = (1,224,224,3) 
-        self.action_dim = (1,2)
+        if isinstance(self.action_space, spaces.Box):
+            self.action_dim = int(np.prod(self.action_space.shape))
+        
 
         self.pos = 0
         self.full = False
@@ -75,7 +75,7 @@ class BCBuffer(BaseBuffer):
     def add_episodes_from_h5py(
         self,
         episodes
-    ):
+    ):  
         for episode in episodes:
             self.add(episode) 
             ep_len = len(episode['obs'])
@@ -98,6 +98,56 @@ class BCBuffer(BaseBuffer):
                 ep['next_obs'].append(np.zeros(self.observation_dim, ) + 1)    
 
             # ep.set_zeropaddings(n_padding=self.subseq_len)
+        return True       
+
+
+
+    def add_episodes_from_d4rl(
+        self,
+        episodes
+    ):    
+
+        dummy_obs = np.expand_dims(np.zeros(shape=self.observation_dim),axis=0)
+        dummy_action = np.expand_dims(np.zeros(shape=self.action_dim),axis=0)        
+        dummy_common = np.expand_dims(np.zeros(shape=(1,)),axis=0)
+
+        # 'rewards', 'terminals'
+
+
+        # preprocess data and add it to buffer
+        for episode in episodes:
+            episode['obs'] = episode.pop('observations')
+            episode['next_obs'] = np.concatenate((episode['obs'][1:],dummy_obs))
+
+            self.add(episode) 
+            ep_len = len(episode['obs'])
+            self.episode_lengths.append(ep_len)
+
+        if len(self.episode_lengths) == 0:
+            return False
+
+        self.min_episode_length = min(self.episode_lengths)
+        self.max_episode_length = max(self.episode_lengths)
+        
+        ## zero padding for subsequence
+        n_padding = self.subseq_len - 1
+
+        # intialize paddings 
+        obs_pad = np.tile(dummy_obs,(n_padding,1))
+        action_pad = np.tile(dummy_action,(n_padding,1))
+        rew_pad = np.tile(dummy_common,(n_padding,))
+        terminal_pad = rew_pad.copy().astype(np.bool_)
+        timeout_pad = terminal_pad.copy()
+
+        # add paddings to original episode
+        if n_padding: 
+            for ep in self.episodes:
+                ep['obs'] = np.append(ep['obs'],obs_pad,axis=0)
+                ep['actions'] = np.append(ep['actions'],action_pad,axis=0)
+                ep['next_obs'] = np.append(ep['next_obs'],obs_pad,axis=0)
+                ep['terminals'] = np.append(ep['terminals'],terminal_pad)
+                ep['timeouts'] = np.append(ep['timeouts'],timeout_pad)
+                
         return True       
         
     def extend(self, *args, **kwargs) -> None:

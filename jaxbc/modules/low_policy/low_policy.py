@@ -11,7 +11,7 @@ from flax.linen.module import init
 
 from jaxbc.modules.common import Model
 from jaxbc.modules.updates import bc_mlp_updt
-from jaxbc.modules.bcmlp import PrimBCMLP
+from jaxbc.modules.architecture.resnet18_mlp import PrimRN18MLP,PrimMLP
 from jaxbc.modules.forwards import resnet18_mlp_forward as fwd
 
 
@@ -25,6 +25,7 @@ class MLPpolicy():
             init_build_model: bool = True
     ):
         self.observation_dim = cfg['observation_dim']
+
         self.seed = cfg['seed']
         self.cfg = cfg
 
@@ -33,7 +34,7 @@ class MLPpolicy():
         self.__model = None
 
         if init_build_model:
-            self.build_model()
+            self.build_model(architecture=cfg['architecture'])
 
     @property
     def model(self) -> Model:
@@ -43,27 +44,38 @@ class MLPpolicy():
     def model(self, value):
         self.__model = value      
 
-    def build_model(self):
+    def build_model(self,architecture):
 
         act_scale = False
-        acrtion_dim = 2
+        action_dim = self.cfg['action_dim']
         net_arch = [128]*4
         activation_fn = nn.relu
         dropout = 0.0
         squash_output = True
         layer_norm = False
 
-        mlp = PrimBCMLP(
-            act_scale=act_scale,
-            output_dim=acrtion_dim,
-            net_arch=net_arch,
-            activation_fn=activation_fn,
-            dropout=dropout,
-            squash_output=squash_output,
-            layer_norm=layer_norm
-        )
-        # init_obs = np.zeros((1, self.observation_dim))
-        init_obs = jnp.ones((1, 224, 224, 3))
+        if architecture == 'rn18_mlp':
+            mlp = PrimRN18MLP(
+                act_scale=act_scale,
+                output_dim=action_dim,
+                net_arch=net_arch,
+                activation_fn=activation_fn,
+                dropout=dropout,
+                squash_output=squash_output,
+                layer_norm=layer_norm
+            )
+        elif architecture == 'naive_mlp':
+            mlp = PrimMLP(
+                act_scale=act_scale,
+                output_dim=action_dim,
+                net_arch=net_arch,
+                activation_fn=activation_fn,
+                dropout=dropout,
+                squash_output=squash_output,
+                layer_norm=layer_norm
+            )            
+        
+        init_obs = np.expand_dims(np.zeros((self.observation_dim)),axis=0)
 
         rng, param_key, dropout_key, batch_key = jax.random.split(self.rng, 4)
 

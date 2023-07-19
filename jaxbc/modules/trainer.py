@@ -1,6 +1,6 @@
 from typing import Dict
 # from andykim_jax.model import Model
-from jaxbc.modules.low_policy import MLPpolicy
+from jaxbc.modules.low_policy.low_policy import MLPpolicy
 
 ### class trainer ###
 
@@ -20,12 +20,18 @@ class BCTrainer():
         #TODO initialize low_policy
 
         seed = cfg['seed']
-        self.low_policy = MLPpolicy(seed=seed,cfg=cfg)
+
+        # string to model
+        if cfg['low_policy'] == "mlp_policy":
+            self.low_policy = MLPpolicy(seed=seed,cfg=cfg)
+
+
         self.n_update = 0
         self.log_interval = 1e20
         self.save_interval = 2000
 
     def run(self,replay_buffer):
+
         for _ in range(len(replay_buffer)//self.batch_size):
             replay_data = replay_buffer.sample(batch_size = self.batch_size)
 
