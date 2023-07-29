@@ -59,11 +59,7 @@ class BCTrainer():
         raise NotImplementedError
         for key, save_path in self.cfg["save_paths"].items():
             getattr(self, key).save(save_path)   
-    
-    def evaluate(self,replay_buffer):
-        batch_size = self.cfg['train']['batch_size']
-        eval_data = replay_buffer.sample(128)  
-        info = self.low_policy.evaluate(eval_data)
+
 
     def evaluate(self,env):
         # eval

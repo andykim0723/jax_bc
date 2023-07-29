@@ -42,13 +42,18 @@ python d4rl.py
 ```
 
 ## validatrion
-**BC**
 
-halfcheetah: achieved 12561.03 reward in 1e5 steps. \
-hopper: \
-carla: \
-RLBench: \
-.
+- [X] D4RL gym mujoco 
+
+* halfcheetah: BC(1e5 steps): 12561.03 expert 12135.0 
+
+* hopper: BC(5e4 steps): 3645.24 expert: 3234.3
+
+- [ ] D4RL carla
+* carla-lane-v0:
+* carla-town-v0:
+
+- [ ] RLBench: 
 
 ## todo
 1. log function
@@ -57,6 +62,8 @@ RLBench: \
 2. save function
    1. save jax model
 3. additional env
-   1. d4rl hopper
+   1. ~~d4rl hopper~~ 
    2. carla
    3. RLBench
+4. online evaluation
+5. config 정리

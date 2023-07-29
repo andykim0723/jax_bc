@@ -113,7 +113,7 @@ if __name__ == '__main__':
     
     parser.add_argument(
         "--mode",type=str, default="halfcheetah_bc",
-        choices=['halfcheetah_bc'],
+        choices=['halfcheetah_bc','hopper_bc'],
         required=True)
     
     # TODO fix later
