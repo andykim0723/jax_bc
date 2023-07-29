@@ -1,0 +1,1 @@
+python bc.py --mode 'halfcheetah_bc' 

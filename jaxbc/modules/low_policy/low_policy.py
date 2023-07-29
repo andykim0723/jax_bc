@@ -20,12 +20,10 @@ class MLPpolicy():
     # initial variables
     def __init__(
             self,
-            seed: int,
             cfg: Dict,
             init_build_model: bool = True
     ):
         self.observation_dim = cfg['observation_dim']
-
         self.seed = cfg['seed']
         self.cfg = cfg
 
@@ -34,7 +32,7 @@ class MLPpolicy():
         self.__model = None
 
         if init_build_model:
-            self.build_model(architecture=cfg['architecture'])
+            self.build_model()
 
     @property
     def model(self) -> Model:
@@ -44,27 +42,29 @@ class MLPpolicy():
     def model(self, value):
         self.__model = value      
 
-    def build_model(self,architecture):
+    def build_model(self):
 
         act_scale = False
         action_dim = self.cfg['action_dim']
-        net_arch = [128]*4
+        # net_arch = [256]*4
+        net_arch = self.cfg['policy']['architecture']
         activation_fn = nn.relu
         dropout = 0.0
         squash_output = True
         layer_norm = False
 
-        if architecture == 'rn18_mlp':
-            mlp = PrimRN18MLP(
-                act_scale=act_scale,
-                output_dim=action_dim,
-                net_arch=net_arch,
-                activation_fn=activation_fn,
-                dropout=dropout,
-                squash_output=squash_output,
-                layer_norm=layer_norm
-            )
-        elif architecture == 'naive_mlp':
+        if self.cfg['policy']['feature_extractor']:
+            if self.cfg['policy']['feature_extractor'] == 'resnet18':
+                mlp = PrimRN18MLP(
+                    act_scale=act_scale,
+                    output_dim=action_dim,
+                    net_arch=net_arch,
+                    activation_fn=activation_fn,
+                    dropout=dropout,
+                    squash_output=squash_output,
+                    layer_norm=layer_norm
+                )
+        else:
             mlp = PrimMLP(
                 act_scale=act_scale,
                 output_dim=action_dim,
@@ -81,7 +81,7 @@ class MLPpolicy():
 
         self.rng = rng
         rngs = {"params": param_key, "dropout": dropout_key, "batch_stats": batch_key}
-        tx = optax.adam(self.cfg["lr"])
+        tx = optax.adam(self.cfg['train']["lr"])
         self.model = Model.create(model_def=mlp, inputs=[rngs, init_obs], tx=tx)
 
     def update(self, replay_data):

@@ -1,0 +1,27 @@
+{
+    "seed": 42,
+    "env" : "halfcheetah-expert-v0",
+    "policy": {
+        "low_policy": "bc",
+        "feature_extractor": false,
+        "architecture": [400,300],
+        "tanh_action": true
+    },
+    "train": {
+        "steps" : 1e5,
+        "lr": 3e-4,
+        "batch_size" : 256,
+        "buffer_size": 1e10,
+        "subseq_len": 1,
+        "eval_interval": 500,
+        "eval_episodes": 3,
+        "log_interval": 1e4,
+        "save_interval": 1e4
+    },
+
+    "eval":{
+        "eval_interval": 1e4,
+        "eval_episodes": 3,
+        "log_path": "logs/"
+    }
+}

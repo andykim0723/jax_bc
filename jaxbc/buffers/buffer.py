@@ -56,6 +56,9 @@ class BCBuffer(BaseBuffer):
 
     def __len__(self):
         return len(self.episodes)
+    
+    def shuffle(self):
+        random.shuffle(self.episodes)
 
     def size(self) -> int:
         """

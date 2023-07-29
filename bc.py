@@ -1,6 +1,11 @@
+import os
+import json
+import random
+import argparse
 
+from copy import deepcopy
+from PIL import Image
 import jax
-
 import numpy as np
 
 from rlbench.action_modes.action_mode import MoveArmThenGripper
@@ -14,6 +19,8 @@ from rlbench.tasks import ReachTarget, PickAndLift
 from jaxbc.modules.trainer import BCTrainer,OnlineBCTrainer
 from jaxbc.buffers.buffer import BCBuffer
 
+import gym
+import d4rl
 
 class Agent(object):  
     def __init__(self, action_shape):
@@ -27,7 +34,7 @@ class Agent(object):
         gripper = [1.0]  # Always open
         return np.concatenate([arm, gripper], axis=-1)
 
-def create_env(task):
+def create_rlbench_env(task):
     ### environment ###
     # To use 'saved' demos, set the path below, and set live_demos=False
     live_demos = True
@@ -48,84 +55,84 @@ def create_env(task):
     # # agent.ingest(demos)
     # return task_env
 
-def random_episodes(num_episodes):
-    rng = jax.random.PRNGKey(42)
+def yielding(ls):
+    for i in ls:
+        yield i
 
-    episodes = []
-    num_episodes = num_episodes
-    for i_epi in range(num_episodes):
-        num_ts =  np.random.randint(low=5,high=100)
-        obs = []
-        actions = []
-        for ts in range(num_ts):
-            img_rng, action_rng = jax.random.split(rng, num=2) # not working, sampling same number each loop
-            
-            img = np.random.rand(224,224,3)
-            action = np.random.randint(low=0,high=5,size=2)
-
-            obs.append(np.expand_dims(img,axis=0))
-            actions.append(np.expand_dims(action,axis=0))
-
+def evaluate(env,trainer,n_episode):
+    # eval
+    rewards = []
+    for n in range(n_episode):
         
+        obs = env.reset()
+        returns = 0
+        for t in range(env._max_episode_steps):
 
-        nxt_obs = obs[1:]
-        dummy_img = np.zeros(shape=(1,224,224,3))
-        nxt_obs.append(dummy_img)
-        
-        # np_obs = np.concatenate(obs)
-        # np_nxt_obs = np.concatenate(nxt_obs)
-        # np_actions = np.concatenate(actions)
-        episode = {
-            'obs': obs,
-            'actions': actions,
-            'next_obs': nxt_obs
-        }
-        episodes.append(episode)
-    
-    return episodes
+            # img_arr = env.render(mode="rgb_array")
+            # img = Image.fromarray(img_arr)
+            # img.save('test.png')
+
+            action = trainer.low_policy.predict(obs)
+            obs,rew,done,info = env.step(action)
+            returns += rew
+            if done:
+                break
+        rewards.append(returns)
+
+    return rewards
 
 
-def main():
+def main(args):
+
+    config_filepath = os.path.join('configs',args.mode+'.json')
+
+    with open(config_filepath) as f:
+        cfg = json.load(f)
     
     ### env ###
-    task = PickAndLift
-    env = create_env(task=task)
-    env.launch()
-    task_env = env.get_task(task)
+    env = gym.make(cfg['env'])
+    episodes = d4rl.sequence_dataset(env)
+    cfg['observation_dim'] = env.observation_space.shape
+    cfg['action_dim'] = int(np.prod(env.action_space.shape))
+
+    trainer = BCTrainer(cfg=cfg)
+
+    # generator to list
+    episodes = list(yielding(episodes))
+
+    # new 
+    replay_buffer = BCBuffer(buffer_size=cfg['train']['buffer_size'],subseq_len=cfg['train']['subseq_len'],env=env)
+    replay_buffer.add_episodes_from_d4rl(episodes)
+    
+    # train
+    trainer.run(replay_buffer,env)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    # Main Args
+    
+    parser.add_argument(
+        "--mode",type=str, default="halfcheetah_bc",
+        choices=['halfcheetah_bc'],
+        required=True)
+    
+    # TODO fix later
+    # parser.add_argument(
+    #     "--env", type=str, default='halfcheetah-expert-v0', 
+    #     choices=['halfcheetah-expert-v0'],
+    #     help='currently supporting halfcheetah-expert only.'
+    #     'will add Pick-Place(RLBench), Carla_route1(CARLA).')
+    
+    # parser.add_argument(
+    #     "--policy", type=str, default='bc', 
+    #     choices=['bc'])
+    
+    # parser.add_argument(
+    #     "--feature_extractor", type=str, default=None, 
+    #     choices=['resnet18'])
+    
+    args = parser.parse_args()
+    main(args)
 
 
-    # use task_env to step & reset, not env
 
-    online = False
-
-    cfg = {
-        'batch_size': 32,
-        'observation_dim': 512,
-        'seed': 42,
-        'lr': 1e-2
-    }
-
-
-    if online:
-        trainer = OnlineBCTrainer()
-    else:
-        trainer = BCTrainer(cfg=cfg)
-
-
-    buffer_size = 1e10
-    subseq_len = 1
-    replay_buffer = BCBuffer(buffer_size=buffer_size,subseq_len=subseq_len)
-    episodes = random_episodes(num_episodes=100)
-
-    # ep_len = [len(ep['obs']) for ep in episodes]
-
-    replay_buffer.add_episodes_from_h5py(episodes)
-
-    trainer.run(replay_buffer)
-
-    env.shutdown()
-
-
-
-if __name__ == "__main__":
-    main()
