@@ -21,7 +21,7 @@ def main(args):
 
     ### policy ###
     low_policy = MLPpolicy(cfg=cfg)
-    load_path = os.path.join('logs','test')
+    load_path = os.path.join('logs',args.load_path)
     low_policy.load(load_path)
 
     ### evaluation ###
@@ -46,6 +46,8 @@ if __name__ == '__main__':
     parser.add_argument(
         "--mode",type=str, default="halfcheetah_bc",
         choices=['halfcheetah_bc','hopper_bc'])
+    parser.add_argument(
+        "--load_path",type=str, default="logs/test")
     args = parser.parse_args()
     main(args)
 

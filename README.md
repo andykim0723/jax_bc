@@ -61,6 +61,7 @@ python d4rl.py
    2. graph
 2. save function
    1. save jax model
+   2. load jax model
 3. additional env
    1. ~~d4rl hopper~~ 
    2. carla
