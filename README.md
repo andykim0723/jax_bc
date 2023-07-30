@@ -41,7 +41,7 @@ python d4rl.py
 
 ```
 
-## validatrion
+## validation
 
 - [X] D4RL gym mujoco 
 

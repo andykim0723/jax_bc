@@ -1,8 +1,10 @@
-from typing import Dict
-# from andykim_jax.model import Model
-from jaxbc.modules.low_policy.low_policy import MLPpolicy
+import os
 import numpy as np
-### class trainer ###
+from typing import Dict
+from datetime import datetime
+
+from jaxbc.modules.low_policy.low_policy import MLPpolicy
+
 
 class OnlineBCTrainer():
     pass
@@ -28,6 +30,9 @@ class BCTrainer():
         self.save_interval = cfg['train']['save_interval']
         self.eval_interval = cfg['eval']['eval_interval']
 
+        # time
+        self.prepare_run()
+
 
     def run(self,replay_buffer,env):  
         #
@@ -40,8 +45,8 @@ class BCTrainer():
                 print(self.n_update,info['decoder/mse_loss'])
                 # self.record(self.n_update,info)
         
-            # if (self.n_update % self.save_interval) == 0:
-            #     self.save()
+            if (self.n_update % self.save_interval) == 0:
+                self.save()
             
             if (self.n_update % self.eval_interval) == 0:
                 print(f'n_step: {self.n_update}. start evaluation..')
@@ -56,9 +61,11 @@ class BCTrainer():
         print(step,loss)
 
     def save(self):
-        raise NotImplementedError
-        for key, save_path in self.cfg["save_paths"].items():
-            getattr(self, key).save(save_path)   
+        save_path = os.path.join('logs','test')
+        self.low_policy.save(save_path)
+        # raise NotImplementedError
+        # for key, save_path in self.cfg["save_paths"].items():
+        #     getattr(self, key).save(save_path)   
 
 
     def evaluate(self,env):
@@ -82,4 +89,8 @@ class BCTrainer():
             rewards.append(returns)
 
         return rewards
+
+
+    def prepare_run(self):
+        self.start = datetime.now()
 

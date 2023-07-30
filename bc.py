@@ -18,6 +18,7 @@ from rlbench.tasks import ReachTarget, PickAndLift
 
 from jaxbc.modules.trainer import BCTrainer,OnlineBCTrainer
 from jaxbc.buffers.buffer import BCBuffer
+from jaxbc.utils.jaxbc_utils import yielding
 
 import gym
 import d4rl
@@ -55,9 +56,6 @@ def create_rlbench_env(task):
     # # agent.ingest(demos)
     # return task_env
 
-def yielding(ls):
-    for i in ls:
-        yield i
 
 def evaluate(env,trainer,n_episode):
     # eval

@@ -160,3 +160,8 @@ class MLPpolicy():
         }
         return eval_info
 
+    def save(self, path: str) -> None:
+        self.model.save_dict_from_path(path)
+
+    def load(self, path: str) -> None:
+        self.model = self.model.load_dict_from_path(path)

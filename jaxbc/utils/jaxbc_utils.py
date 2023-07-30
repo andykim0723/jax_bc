@@ -32,3 +32,7 @@ def random_episodes(num_episodes):
     
     return episodes
 
+
+def yielding(ls):
+    for i in ls:
+        yield i
