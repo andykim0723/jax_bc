@@ -56,12 +56,11 @@ python d4rl.py
 - [ ] RLBench: 
 
 ## todo
-1. log function
-   1. logger file
-   2. graph
-2. save function
-   1. save jax model
-   2. load jax model
+1. ~~log function~~
+   1. ~~wandb~~
+2. ~~save function~~
+   1. ~~save jax model~~
+   2. ~~load jax model~~
 3. additional env
    1. ~~d4rl hopper~~ 
    2. carla

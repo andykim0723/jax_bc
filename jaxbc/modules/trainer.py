@@ -1,4 +1,5 @@
 import os
+import wandb
 import numpy as np
 from typing import Dict
 from datetime import datetime
@@ -25,12 +26,13 @@ class BCTrainer():
             self.low_policy = MLPpolicy(cfg=cfg)
 
         self.n_update = 0
+        self.eval_rewards = []
         
         self.log_interval = cfg['train']['log_interval']
         self.save_interval = cfg['train']['save_interval']
         self.eval_interval = cfg['eval']['eval_interval']
-
-        # time
+        self.weights_path = cfg['train']['weights_path']
+        self.wandb_record =  cfg['wandb']['record']
         self.prepare_run()
 
 
@@ -43,29 +45,49 @@ class BCTrainer():
 
             if (self.n_update % self.log_interval) == 0:
                 print(self.n_update,info['decoder/mse_loss'])
-                # self.record(self.n_update,info)
+                self.print_log(self.n_update,info)
         
             if (self.n_update % self.save_interval) == 0:
-                self.save()
+                self.save(str(self.n_update)+"_")
             
             if (self.n_update % self.eval_interval) == 0:
-                print(f'n_step: {self.n_update}. start evaluation..')
-                rewards = self.evaluate(env)
-                print("rewards: ", np.mean(rewards))
- 
-    
-    def record(self,step,info):
-        raise NotImplementedError
-        loss = info['decoder/mse_loss']
-        save_path = self.cfg['save_path']
-        print(step,loss)
+                print(f'🤯start evaluation🤯')
+                reward_mean = np.mean(self.evaluate(env))
+                print(f"timestep: {self.n_update} | reward mean : {reward_mean}")
 
-    def save(self):
-        save_path = os.path.join('logs','test')
+                self.eval_rewards.append(reward_mean)
+                if max(self.eval_rewards) == reward_mean:
+                    self.save('best')
+
+                if self.wandb_record:
+                    self.wandb_logger.log({
+                        "evaluation reward": reward_mean
+                    })
+
+            # log loss
+            if self.wandb_record:
+                self.record(info)
+
+    def print_log(self,step,info):
+        
+        now = datetime.now()
+        elapsed = (now - self.start).seconds
+        loss = info['decoder/mse_loss']
+
+        print(f"timestep: {step} | mse loss : {loss} | elapsed: {elapsed}s")
+    
+    def record(self,info):
+                
+        loss = info['decoder/mse_loss']
+        if self.wandb_record:
+            self.wandb_logger.log({
+                "mse loss": loss
+                }
+            )
+
+    def save(self,path):
+        save_path = os.path.join(self.weights_path,path)
         self.low_policy.save(save_path)
-        # raise NotImplementedError
-        # for key, save_path in self.cfg["save_paths"].items():
-        #     getattr(self, key).save(save_path)   
 
 
     def evaluate(self,env):
@@ -93,4 +115,13 @@ class BCTrainer():
 
     def prepare_run(self):
         self.start = datetime.now()
+
+        if self.wandb_record:
+            self.wandb_logger = wandb.init(
+                project=self.cfg["wandb"]["project"],
+                entity=self.cfg["wandb"]["entity"],
+                config=self.cfg,
+                name=self.cfg["wandb"]["name"]
+            )
+
 
