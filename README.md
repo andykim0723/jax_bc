@@ -22,6 +22,8 @@ pip install --upgrade git+https://github.com/n2cholas/jax-resnet.git
 # d4rl
 pip install git+https://github.com/Farama-Foundation/d4rl@master#egg=d4rl
 
+pip install wandb
+
 ```
 
 # Usage

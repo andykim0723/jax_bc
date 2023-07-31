@@ -1,2 +1,2 @@
-python bc.py --mode 'halfcheetah_bc' 
-# python bc.py --mode 'hopper_bc' 
+python train.py --task 'd4rl-halfcheetah' --policy 'bc' 
+python train.py --task 'd4rl-hopper' --policy 'bc' 

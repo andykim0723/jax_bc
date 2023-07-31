@@ -1,0 +1,32 @@
+{
+    "seed": 42,
+    "env_name": "d4rl",
+    "task_name": "hopper-expert-v0",
+    "policy": "bc",    
+
+    "policy_args": {
+        "feature_extractor": false,
+        "architecture": [400,300],
+        "tanh_action": true
+    },
+
+    "info": {
+        "train_steps" : 5e4,
+        "lr": 3e-4,
+        "batch_size" : 256,
+        "buffer_size": 1e10,
+        "subseq_len": 1,
+        
+        "eval_episodes": 3,
+
+        "weights_path": "weights/hopper_bc",
+        "log_interval": 1e4,
+        "save_interval": 1e4,
+        "eval_interval": 1e4
+    },
+
+    "wandb":{
+        "record": true,
+        "entity": "andykim0723"
+    }
+}

@@ -16,7 +16,6 @@ def main(args):
 
     ### env ###
     env = gym.make(cfg['env'])
-
     cfg['observation_dim'] = env.observation_space.shape
     cfg['action_dim'] = int(np.prod(env.action_space.shape))
 

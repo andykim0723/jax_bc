@@ -19,26 +19,31 @@ class BCTrainer():
         cfg: Dict,
     ):
         self.cfg = cfg
-        self.batch_size = cfg['train']['batch_size']
+        self.batch_size = cfg['info']['batch_size']
 
         # string to model
-        if cfg['policy']["low_policy"] == "bc":
+        if cfg["policy"] == "bc":
             self.low_policy = MLPpolicy(cfg=cfg)
 
         self.n_update = 0
         self.eval_rewards = []
-        
-        self.log_interval = cfg['interval']['log_interval']
-        self.save_interval = cfg['interval']['save_interval']
-        self.eval_interval = cfg['interval']['eval_interval']
-        self.weights_path = cfg['train']['weights_path']
+
+        self.train_steps = cfg['info']['train_steps']
+        self.eval_episodes = self.cfg['info']['eval_episodes']
+        self.eval_env = cfg['env_name']
+
+        self.log_interval = cfg['info']['log_interval']
+        self.save_interval = cfg['info']['save_interval']
+        self.eval_interval = cfg['info']['eval_interval']
+        self.weights_path = cfg['info']['weights_path']
+
         self.wandb_record =  cfg['wandb']['record']
-        self.eval_env = cfg['eval']['env']
+
         self.prepare_run()
 
     def run(self,replay_buffer,env):  
         #
-        for step in range(int(self.cfg['train']['steps'])):
+        for _ in range(int(self.train_steps)):
             replay_data = replay_buffer.sample(batch_size = self.batch_size)
             info = self.low_policy.update(replay_data)
             self.n_update += 1
@@ -67,14 +72,14 @@ class BCTrainer():
                 self.record(info)
     
     def evaluate(self,env):
-        num_episodes = self.cfg['eval']['num_episodes']
 
         if self.eval_env == "d4rl":
-            rewards = d4rl_evaluate(env,self.low_policy,num_episodes)
+            rewards = d4rl_evaluate(env,self.low_policy,self.eval_episodes)
 
         return rewards
 
     def save(self,path):
+        # date_time = datetime.now().strftime('%m-%d_%H:%M')
         save_path = os.path.join(self.weights_path,path)
         self.low_policy.save(save_path)
 
@@ -96,13 +101,19 @@ class BCTrainer():
 
     def prepare_run(self):
         self.start = datetime.now()
+        
+        env_name = self.cfg['env_name']
+        task_name = self.cfg['task_name'].split('-')[0]  
+        policy_name = self.cfg['policy']
 
+        project = env_name+ '_' + task_name  
+        name = task_name + '_' + policy_name
         if self.wandb_record:
             self.wandb_logger = wandb.init(
-                project=self.cfg["wandb"]["project"],
+                project=project,
+                name=name,
                 entity=self.cfg["wandb"]["entity"],
                 config=self.cfg,
-                name=self.cfg["wandb"]["name"]
             )
 
 

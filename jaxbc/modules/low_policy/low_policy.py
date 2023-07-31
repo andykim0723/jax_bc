@@ -47,14 +47,14 @@ class MLPpolicy():
         act_scale = False
         action_dim = self.cfg['action_dim']
         # net_arch = [256]*4
-        net_arch = self.cfg['policy']['architecture']
+        net_arch = self.cfg['policy_args']['architecture']
         activation_fn = nn.relu
         dropout = 0.0
         squash_output = True
         layer_norm = False
 
-        if self.cfg['policy']['feature_extractor']:
-            if self.cfg['policy']['feature_extractor'] == 'resnet18':
+        if self.cfg['policy_args']['feature_extractor']:
+            if self.cfg['policy_args']['feature_extractor'] == 'resnet18':
                 mlp = PrimRN18MLP(
                     act_scale=act_scale,
                     output_dim=action_dim,
@@ -81,7 +81,7 @@ class MLPpolicy():
 
         self.rng = rng
         rngs = {"params": param_key, "dropout": dropout_key, "batch_stats": batch_key}
-        tx = optax.adam(self.cfg['train']["lr"])
+        tx = optax.adam(self.cfg['info']["lr"])
         self.model = Model.create(model_def=mlp, inputs=[rngs, init_obs], tx=tx)
 
     def update(self, replay_data):
