@@ -4,10 +4,11 @@ import d4rl # need this for gym env creation
 import json
 import argparse
 import numpy as np
+
 from jaxbc.modules.low_policy.low_policy import MLPpolicy
+from envs.eval_func import d4rl_evaluate
 
 def main(args):
-
     ### cfg ###
     config_filepath = os.path.join('configs',args.mode+'.json')
     with open(config_filepath) as f:
@@ -25,29 +26,20 @@ def main(args):
     low_policy.load(load_path)
 
     ### evaluation ###
-    rewards = []
-    for _ in range(cfg['eval']['eval_episodes']):
-
-        obs = env.reset()
-        returns = 0
-        for t in range(env._max_episode_steps):
-            action = low_policy.predict(obs)
-            obs,rew,done,info = env.step(action)
-            returns += rew
-            if done:
-                break
-        rewards.append(returns)
-    print("rewards: ", np.mean(rewards))
+    num_episodes = cfg['eval']['eval_episodes']
+    reward_mean = np.mean(d4rl_evaluate(env,low_policy,num_episodes))
+    print("rewards: ", reward_mean))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    # Main Args
     parser.add_argument(
         "--mode",type=str, default="halfcheetah_bc",
         choices=['halfcheetah_bc','hopper_bc'])
+    
     parser.add_argument(
-        "--load_path",type=str, default="logs/test")
+        "--load_path",type=str, default="weights/hopper_bc/best")
+    
     args = parser.parse_args()
     main(args)
 

@@ -14,22 +14,24 @@
         "batch_size" : 256,
         "buffer_size": 1e10,
         "subseq_len": 1,
-        "eval_interval": 500,
-        "eval_episodes": 3,
-        "log_interval": 1e4,
-        "save_interval": 1e4,
         "weights_path": "weights/halfcheetah_bc"
     },
 
     "eval":{
-        "eval_interval": 1e4,
-        "eval_episodes": 3
+        "env": "d4rl",
+        "num_episodes": 3
+    },
+
+    "interval":{
+        "log_interval": 1e4,
+        "save_interval": 1e4,
+        "eval_interval": 1e4
     },
 
     "wandb":{
+        "record": false,
         "project": "d4rl_halfcheetah",
         "entity": "andykim0723",
-        "name": "halfcheetah_bc",
-        "record": true
+        "name": "halfcheetah_bc"
     }
 }

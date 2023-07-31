@@ -5,7 +5,7 @@ from typing import Dict
 from datetime import datetime
 
 from jaxbc.modules.low_policy.low_policy import MLPpolicy
-
+from envs.eval_func import d4rl_evaluate
 
 class OnlineBCTrainer():
     pass
@@ -28,13 +28,13 @@ class BCTrainer():
         self.n_update = 0
         self.eval_rewards = []
         
-        self.log_interval = cfg['train']['log_interval']
-        self.save_interval = cfg['train']['save_interval']
-        self.eval_interval = cfg['eval']['eval_interval']
+        self.log_interval = cfg['interval']['log_interval']
+        self.save_interval = cfg['interval']['save_interval']
+        self.eval_interval = cfg['interval']['eval_interval']
         self.weights_path = cfg['train']['weights_path']
         self.wandb_record =  cfg['wandb']['record']
+        self.eval_env = cfg['eval']['env']
         self.prepare_run()
-
 
     def run(self,replay_buffer,env):  
         #
@@ -44,18 +44,17 @@ class BCTrainer():
             self.n_update += 1
 
             if (self.n_update % self.log_interval) == 0:
-                print(self.n_update,info['decoder/mse_loss'])
                 self.print_log(self.n_update,info)
         
             if (self.n_update % self.save_interval) == 0:
                 self.save(str(self.n_update)+"_")
             
             if (self.n_update % self.eval_interval) == 0:
-                print(f'🤯start evaluation🤯')
                 reward_mean = np.mean(self.evaluate(env))
-                print(f"timestep: {self.n_update} | reward mean : {reward_mean}")
-
                 self.eval_rewards.append(reward_mean)
+
+                print(f"🤯eval🤯 timestep: {self.n_update} | reward mean : {reward_mean}")
+
                 if max(self.eval_rewards) == reward_mean:
                     self.save('best')
 
@@ -64,54 +63,36 @@ class BCTrainer():
                         "evaluation reward": reward_mean
                     })
 
-            # log loss
             if self.wandb_record:
                 self.record(info)
-
-    def print_log(self,step,info):
-        
-        now = datetime.now()
-        elapsed = (now - self.start).seconds
-        loss = info['decoder/mse_loss']
-
-        print(f"timestep: {step} | mse loss : {loss} | elapsed: {elapsed}s")
     
+    def evaluate(self,env):
+        num_episodes = self.cfg['eval']['num_episodes']
+
+        if self.eval_env == "d4rl":
+            rewards = d4rl_evaluate(env,self.low_policy,num_episodes)
+
+        return rewards
+
+    def save(self,path):
+        save_path = os.path.join(self.weights_path,path)
+        self.low_policy.save(save_path)
+
     def record(self,info):
-                
         loss = info['decoder/mse_loss']
+
         if self.wandb_record:
             self.wandb_logger.log({
                 "mse loss": loss
                 }
             )
 
-    def save(self,path):
-        save_path = os.path.join(self.weights_path,path)
-        self.low_policy.save(save_path)
+    def print_log(self,step,info):
+        now = datetime.now()
+        elapsed = (now - self.start).seconds
+        loss = info['decoder/mse_loss']
 
-
-    def evaluate(self,env):
-        # eval
-        rewards = []
-        for n in range(self.cfg['eval']['eval_episodes']):
-
-            obs = env.reset()
-            returns = 0
-            for t in range(env._max_episode_steps):
-
-                # img_arr = env.render(mode="rgb_array")
-                # img = Image.fromarray(img_arr)
-                # img.save('test.png')
-
-                action = self.low_policy.predict(obs)
-                obs,rew,done,info = env.step(action)
-                returns += rew
-                if done:
-                    break
-            rewards.append(returns)
-
-        return rewards
-
+        print(f"🤯train🤯 timestep: {step} | mse loss : {loss} | elapsed: {elapsed}s")
 
     def prepare_run(self):
         self.start = datetime.now()
