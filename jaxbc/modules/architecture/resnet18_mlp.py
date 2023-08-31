@@ -85,7 +85,7 @@ class PrimRN18MLP(nn.Module):
 	def setup(self) -> None:
 		
 		fe_model = ResNet18(n_classes=10,norm_cls = None)
-		self.fe_model = nn.Sequential(fe_model.layers[0:-1])
+		self.fe_model = nn.Sequential(fe_model.layers[0:-1]) # remove classifier
 
 		mlp = create_mlp(
 			output_dim=self.output_dim,
@@ -110,13 +110,15 @@ class PrimRN18MLP(nn.Module):
 	def forward(
 		self,
 		observations: jnp.ndarray,
+		states: jnp.ndarray,
 		# skills: jnp.ndarray,  # [b, l, d]
 		deterministic: bool = False,
 		training: bool = True,
 		*args, **kwargs		# Do not remove this
 	):
         # fe()
-		mlp_input = self.fe_model(observations)
+		vision_feature = self.fe_model(observations)
+		mlp_input = jnp.concatenate((vision_feature,states),axis=0)
 		y = self.mlp(mlp_input, deterministic=deterministic, training=training)
 		return y
 

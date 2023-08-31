@@ -35,11 +35,12 @@ export DISPLAY=:0.0
 nohup sudo X & 
 ```
 **run command**
-```
-python bc.py
 
-# verify BC model on d4rl
-python d4rl.py
+examples are in the scripts folder. 
+
+```
+# verify BC-halcheetah 
+python train.py --task 'd4rl-halfcheetah' --policy 'bc' 
 
 ```
 
@@ -50,12 +51,12 @@ python d4rl.py
 * halfcheetah: BC(1e5 steps): 12561.03 expert 12135.0 
 
 * hopper: BC(5e4 steps): 3645.24 expert: 3234.3
-
+- [ ] RLBench: 
+* 
 - [ ] D4RL carla
 * carla-lane-v0:
 * carla-town-v0:
 
-- [ ] RLBench: 
 
 ## todo
 1. ~~log function~~
@@ -68,4 +69,4 @@ python d4rl.py
    2. carla
    3. RLBench
 4. online evaluation
-5. config 정리
+5. ~~config 정리~~

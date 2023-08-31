@@ -18,11 +18,10 @@ from gym import spaces
 # }
 
 
-class BCBuffer(BaseBuffer):
+class d4rlBuffer(BaseBuffer):
     def __init__(
         self,
-        buffer_size: int,
-        subseq_len: int,
+        cfg,
         env = None, 
         n_envs: int = 1
         ):
@@ -30,7 +29,7 @@ class BCBuffer(BaseBuffer):
         # action_space = env.action_space
 
         self.env = env
-        self.buffer_size = buffer_size
+        self.buffer_size = cfg['info']['buffer_size']
               
         if env is None:
             self.observation_space = None
@@ -50,7 +49,7 @@ class BCBuffer(BaseBuffer):
         self.full = False
         self.n_envs = n_envs
 
-        self.subseq_len = subseq_len
+        self.subseq_len = cfg['info']['subseq_len']
         self.episodes = []  # type: List[Episode]
         self.episode_lengths = []
 
@@ -102,7 +101,6 @@ class BCBuffer(BaseBuffer):
 
             # ep.set_zeropaddings(n_padding=self.subseq_len)
         return True       
-
 
 
     def add_episodes_from_d4rl(

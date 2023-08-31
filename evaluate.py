@@ -27,7 +27,7 @@ def main(args):
     ### evaluation ###
     num_episodes = cfg['eval']['eval_episodes']
     reward_mean = np.mean(d4rl_evaluate(env,low_policy,num_episodes))
-    print("rewards: ", reward_mean))
+    print("rewards: ", reward_mean)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

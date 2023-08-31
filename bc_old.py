@@ -12,7 +12,7 @@ from rlbench.tasks import ReachTarget, PickAndLift
 
 
 from jaxbc.modules.trainer import BCTrainer,OnlineBCTrainer
-from jaxbc.buffers.buffer import BCBuffer
+from jax_bc.jaxbc.buffers.d4rlbuffer import BCBuffer
 
 
 class Agent(object):  
