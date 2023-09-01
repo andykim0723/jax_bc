@@ -8,6 +8,7 @@ need to match cuda, cudnn version when installing jax,flax. I used:
 
 ```
 pip install jax==0.4.6 
+# pip install jaxlib==0.4.6+cuda11.cudnn82 -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 pip install jaxlib==0.4.6+cuda11.cudnn82 
 pip install flax==0.7.0 
 ```

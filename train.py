@@ -45,8 +45,10 @@ def main(args):
     elif cfg['env_name'] == "rlbench":
 
         # cfg['observation_dim'] = 512 + int(np.prod(env.observation_space['state'].shape)) # visualk feature size + state
-        cfg['observation_dim'] = int(np.prod(env.observation_space['state'].shape)) 
-        cfg['action_dim'] = int(np.prod(env.action_space.shape))
+        # cfg['observation_dim'] = int(np.prod(env.observation_space['state'].shape)) 
+        # cfg['action_dim'] = int(np.prod(env.action_space.shape))
+        cfg['observation_dim'] = 6 
+        cfg['action_dim'] = 8
 
         # data loading
         print("loading data..")
@@ -55,6 +57,7 @@ def main(args):
         with open(data_path+'/variation_descriptions.pkl','rb') as f:
             data = pkl.load(f)
             task_name = data[0]
+        print(task_name)
         
         # load data
 
@@ -66,7 +69,6 @@ def main(args):
                 data = pkl.load(f)._observations
             observations = np.concatenate([obs.task_low_dim_state[np.newaxis,:] for obs in data],axis=0)
             actions = np.concatenate([np.append(obs.joint_velocities,[obs.gripper_open])[np.newaxis,:] for obs in data],axis=0)
-            print(observations.shape)
             
             episode['observations'] = observations
             episode['actions'] = actions
@@ -75,7 +77,7 @@ def main(args):
 
 
         replay_buffer = RlbenchStateBuffer(cfg,env=env)
-        replay_buffer.add_episodes_from_d4rl(episodes)
+        replay_buffer.add_episodes_from_rlbench(episodes)
 
     trainer = BCTrainer(cfg=cfg)
 

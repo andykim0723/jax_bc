@@ -45,6 +45,9 @@ class RlbenchStateBuffer(BaseBuffer):
         if isinstance(self.action_space, spaces.Box):
             self.action_dim = int(np.prod(self.action_space.shape))
         
+        # state only version
+        self.observation_dim = 6
+        self.action_dum = 8 
 
         self.pos = 0
         self.full = False
@@ -109,6 +112,7 @@ class RlbenchStateBuffer(BaseBuffer):
         self,
         episodes
     ):    
+
         dummy_obs = np.expand_dims(np.zeros(shape=self.observation_dim),axis=0)
         dummy_action = np.expand_dims(np.zeros(shape=self.action_dim),axis=0)        
         dummy_common = np.expand_dims(np.zeros(shape=(1,)),axis=0)

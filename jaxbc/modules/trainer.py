@@ -5,7 +5,7 @@ from typing import Dict
 from datetime import datetime
 
 from jaxbc.modules.low_policy.low_policy import MLPpolicy
-from envs.eval_func import d4rl_evaluate
+from envs.eval_func import d4rl_evaluate,rlbench_evaluate
 
 class OnlineBCTrainer():
     pass
@@ -27,6 +27,7 @@ class BCTrainer():
 
         self.n_update = 0
         self.eval_rewards = []
+        self.success_rates = []
 
         self.train_steps = cfg['info']['train_steps']
         self.eval_episodes = self.cfg['info']['eval_episodes']
@@ -55,17 +56,28 @@ class BCTrainer():
                 self.save(str(self.n_update)+"_")
             
             if (self.n_update % self.eval_interval) == 0:
-                reward_mean = np.mean(self.evaluate(env))
-                self.eval_rewards.append(reward_mean)
+                if self.eval_env == "d4rl":
+                    reward_mean = np.mean(self.evaluate(env))
+                    self.eval_rewards.append(reward_mean)
+                    print(f"🤯eval🤯 timestep: {self.n_update} | reward mean : {reward_mean}")
 
-                print(f"🤯eval🤯 timestep: {self.n_update} | reward mean : {reward_mean}")
+                    if max(self.eval_rewards) == reward_mean:
+                        self.save('best')
 
-                if max(self.eval_rewards) == reward_mean:
-                    self.save('best')
+                    if self.wandb_record:
+                        self.wandb_logger.log({
+                            "evaluation reward": reward_mean
+                        })
+                elif self.eval_env == "rlbench":
+                    success_rate = self.evaluate(env)
+                    self.success_rates.append(success_rate)
+                    print(f"🤯eval🤯 timestep: {self.n_update} | success_rate mean : {success_rate}")
 
-                if self.wandb_record:
-                    self.wandb_logger.log({
-                        "evaluation reward": reward_mean
+                    if max(self.success_rates) == success_rate:
+                        self.save('best')
+                    if self.wandb_record:
+                        self.wandb_logger.log({
+                        "success rates": success_rate
                     })
 
             if self.wandb_record:
@@ -75,8 +87,11 @@ class BCTrainer():
 
         if self.eval_env == "d4rl":
             rewards = d4rl_evaluate(env,self.low_policy,self.eval_episodes)
+            return rewards
+        elif self.eval_env == "rlbench":
+            success_rate = rlbench_evaluate(env,self.low_policy,self.eval_episodes)
 
-        return rewards
+        
 
     def save(self,path):
         # date_time = datetime.now().strftime('%m-%d_%H:%M')
