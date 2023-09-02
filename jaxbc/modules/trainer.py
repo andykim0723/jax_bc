@@ -72,7 +72,8 @@ class BCTrainer():
                     success_rate = self.evaluate(env)
                     self.success_rates.append(success_rate)
                     print(f"🤯eval🤯 timestep: {self.n_update} | success_rate mean : {success_rate}")
-
+                    print(self.success_rates,success_rate)
+                    exit()
                     if max(self.success_rates) == success_rate:
                         self.save('best')
                     if self.wandb_record:
@@ -90,6 +91,7 @@ class BCTrainer():
             return rewards
         elif self.eval_env == "rlbench":
             success_rate = rlbench_evaluate(env,self.low_policy,self.eval_episodes)
+            return success_rate
 
         
 

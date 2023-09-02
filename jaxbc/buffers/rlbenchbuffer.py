@@ -46,8 +46,8 @@ class RlbenchStateBuffer(BaseBuffer):
             self.action_dim = int(np.prod(self.action_space.shape))
         
         # state only version
-        self.observation_dim = 6
-        self.action_dum = 8 
+        self.observation_dim = cfg['policy_args']['observation_dim']
+        self.action_dim = cfg['policy_args']['action_dim'] 
 
         self.pos = 0
         self.full = False

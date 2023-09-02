@@ -23,7 +23,7 @@ class MLPpolicy():
             cfg: Dict,
             init_build_model: bool = True
     ):
-        self.observation_dim = cfg['observation_dim']
+        self.observation_dim = cfg['policy_args']['observation_dim']
         self.seed = cfg['seed']
         self.cfg = cfg
 
@@ -45,7 +45,7 @@ class MLPpolicy():
     def build_model(self):
 
         act_scale = False
-        action_dim = self.cfg['action_dim']
+        action_dim = self.cfg['policy_args']['action_dim']
         # net_arch = [256]*4
         net_arch = self.cfg['policy_args']['architecture']
         activation_fn = nn.relu

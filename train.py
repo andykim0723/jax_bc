@@ -47,8 +47,7 @@ def main(args):
         # cfg['observation_dim'] = 512 + int(np.prod(env.observation_space['state'].shape)) # visualk feature size + state
         # cfg['observation_dim'] = int(np.prod(env.observation_space['state'].shape)) 
         # cfg['action_dim'] = int(np.prod(env.action_space.shape))
-        cfg['observation_dim'] = 6 
-        cfg['action_dim'] = 8
+
 
         # data loading
         print("loading data..")
@@ -67,9 +66,10 @@ def main(args):
             episode = {}
             with open(episode_path+'/low_dim_obs.pkl','rb') as f:
                 data = pkl.load(f)._observations
-            observations = np.concatenate([obs.task_low_dim_state[np.newaxis,:] for obs in data],axis=0)
+            # observations = np.concatenate([obs.task_low_dim_state[np.newaxis,:] for obs in data],axis=0)
+            observations = np.concatenate([obs.get_low_dim_data()[np.newaxis,:] for obs in data],axis=0)
             actions = np.concatenate([np.append(obs.joint_velocities,[obs.gripper_open])[np.newaxis,:] for obs in data],axis=0)
-            
+    
             episode['observations'] = observations
             episode['actions'] = actions
 

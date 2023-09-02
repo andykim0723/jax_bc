@@ -23,12 +23,14 @@ def rlbench_evaluate(env,policy,num_episodes):
     for i in range(num_episodes):
         
         obs = env.reset()
-        state = obs['state'][-6:] # last 6 dim represent task_low_dim_state 
+        # state = obs['state'][-6:] # last 6 dim represent task_low_dim_state 
+        state = obs['state']
         for j in range(episode_length):
 
             action = policy.predict(state)
             obs, reward, terminate, _ = env.step(action)
-            state = obs['state'][-6:]
+            # state = obs['state'][-6:]
+            state = obs['state']
             img = obs['front_rgb']
             Image.fromarray(img).save('test.png')
 
