@@ -190,7 +190,6 @@ class RlbenchStateBuffer(BaseBuffer):
             batch_inds = np.random.randint(0, upper_bound, size=batch_size)
  
         env_inds = np.random.randint(0, high=self.n_envs, size=(len(batch_inds),))
-
         return self._get_samples(batch_inds, env_inds=env_inds, env=env, get_batch_inds=get_batch_inds)
 
     def _get_samples(
@@ -210,7 +209,6 @@ class RlbenchStateBuffer(BaseBuffer):
             ep_len = len(episode['obs'])
                 # for starting_idx in starting_idxs:
             starting_idx = np.random.randint(0, ep_len - self.subseq_len)
-
             subtrajectory = {}
             for k,v in episode.items():
                 subtrajectory[k] = v[starting_idx: starting_idx + self.subseq_len]

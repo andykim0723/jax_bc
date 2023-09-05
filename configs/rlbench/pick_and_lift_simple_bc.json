@@ -1,31 +1,33 @@
 {
     "seed": 42,
     "env_name" : "rlbench",
-    "task_name": "pick_and_lift",
+    "task_name": "pick_and_lift_simple",
     "policy": "bc",
 
     "policy_args": {
         "feature_extractor": false,
         "architecture": [400,300],
-        "tanh_action": true,
+        "tanh_action": false,
         "observation_dim": 43,
         "action_dim": 8
     },
 
     "info": {
-        "train_steps" : 1e5,
+        "train_steps" :3e6,
         "lr": 3e-4,
-        "batch_size" : 256,
+        "batch_size" : 50,
         "buffer_size": 1e10,
         "subseq_len": 1,
-        "data_path": "data/pick_and_lift",
+        "data_path": "data/pick_and_lift_simple",
 
-        "eval_episodes": 3,
 
-        "weights_path": "weights/pick_and_lift_bc",
-        "log_interval": 1e4,
-        "save_interval": 1e4,
-        "eval_interval": 1e3
+        "save_path": "results",
+        "log_interval": 5e4,
+        "save_interval": 5e4,
+        "eval_interval": 5e4,
+        
+        "eval_episodes": 1,
+        "record_video": true
 
     },
 

@@ -30,6 +30,8 @@ pip install wandb
 # Usage
 
 **headless mode for RLBench**
+
+note: you need to install opencv-python-headless for headless mode
 ```
 python jaxbc/utils/startx.py
 export DISPLAY=:0.0                                            

@@ -1,5 +1,8 @@
 weights/
+results/
 wandb/
 data/
 
+
 *.png
+*.mp4

@@ -18,6 +18,7 @@ def set_env(cfg):
         import RLBench.rlbench.gym
         obs_type = "vision"
         env = gym.make(cfg['task_name'] + '-' + obs_type + '-v0')
+
         return env
         # action_mode = MoveArmThenGripper(
         # arm_action_mode=JointVelocity(),

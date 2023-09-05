@@ -60,6 +60,7 @@ def main(args):
         
         # load data
 
+  
         episodes = []
         for filename in os.listdir(data_path+"/episodes"):
             episode_path = os.path.join(data_path+"/episodes", filename)
@@ -68,21 +69,31 @@ def main(args):
                 data = pkl.load(f)._observations
             # observations = np.concatenate([obs.task_low_dim_state[np.newaxis,:] for obs in data],axis=0)
             observations = np.concatenate([obs.get_low_dim_data()[np.newaxis,:] for obs in data],axis=0)
+            # min max normalization for joint_force
+            # max_value = 31.173511505126953
+            # min_value = -21.414112091064453   
+            max_value = 82.78092956542969
+            min_value = -77.0235595703125
+
+            data_to_minmax = observations[:,15:22]
+            output = (data_to_minmax - min_value) / (max_value - min_value)
+            observations = np.concatenate([observations[:,:15],output,observations[:,22:]],axis=1)
+
             actions = np.concatenate([np.append(obs.joint_velocities,[obs.gripper_open])[np.newaxis,:] for obs in data],axis=0)
+            # actions = np.concatenate([np.append(obs.joint_positions,[obs.gripper_open])[np.newaxis,:] for obs in data],axis=0)
     
             episode['observations'] = observations
             episode['actions'] = actions
 
             episodes.append(episode)            
 
-
         replay_buffer = RlbenchStateBuffer(cfg,env=env)
         replay_buffer.add_episodes_from_rlbench(episodes)
+
 
     trainer = BCTrainer(cfg=cfg)
 
 
-    
     # train
     trainer.run(replay_buffer,env)
 
@@ -92,7 +103,7 @@ if __name__ == '__main__':
     
     parser.add_argument(
         "--task",type=str, default="d4rl-halfcheetah",
-        choices=['d4rl-halfcheetah','d4rl-hopper','rlbench-pick_and_lift'],
+        choices=['d4rl-halfcheetah','d4rl-hopper','rlbench-pick_and_lift_simple'],
         required=True)
 
     parser.add_argument(

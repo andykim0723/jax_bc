@@ -50,7 +50,7 @@ class MLPpolicy():
         net_arch = self.cfg['policy_args']['architecture']
         activation_fn = nn.relu
         dropout = 0.0
-        squash_output = True
+        squash_output = self.cfg['policy_args']['tanh_action']
         layer_norm = False
 
         if self.cfg['policy_args']['feature_extractor']:

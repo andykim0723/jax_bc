@@ -1,10 +1,12 @@
 import os
+import cv2
 import wandb
 import numpy as np
 from typing import Dict
 from datetime import datetime
 
 from jaxbc.modules.low_policy.low_policy import MLPpolicy
+from jaxbc.utils.common import save_video
 from envs.eval_func import d4rl_evaluate,rlbench_evaluate
 
 class OnlineBCTrainer():
@@ -22,7 +24,10 @@ class BCTrainer():
         self.batch_size = cfg['info']['batch_size']
 
         # string to model
-        if cfg["policy"] == "bc":
+        task_name = cfg['task_name']
+        policy_name = cfg['policy']
+        self.save_path= os.path.join(cfg['info']['save_path'],f"{task_name}_{policy_name}")
+        if policy_name == "bc":
             self.low_policy = MLPpolicy(cfg=cfg)
 
         self.n_update = 0
@@ -36,8 +41,15 @@ class BCTrainer():
         self.log_interval = cfg['info']['log_interval']
         self.save_interval = cfg['info']['save_interval']
         self.eval_interval = cfg['info']['eval_interval']
-        self.weights_path = cfg['info']['weights_path']
-
+        self.weights_path = os.path.join(self.save_path,"weights") 
+        self.log_path = os.path.join(self.save_path,"logs") 
+        self.video_path = os.path.join(self.save_path,"videos") if cfg['info']['record_video'] else None
+        
+        os.makedirs(self.weights_path, exist_ok=True)
+        os.makedirs(self.log_path, exist_ok=True)
+        if self.video_path:
+            os.makedirs(self.video_path, exist_ok=True)
+    
         self.wandb_record =  cfg['wandb']['record']
 
         self.prepare_run()
@@ -46,6 +58,7 @@ class BCTrainer():
         #
         for _ in range(int(self.train_steps)):
             replay_data = replay_buffer.sample(batch_size = self.batch_size)
+            # actions = np.squeeze(np.array([rep['actions'] for rep in replay_data]))
             info = self.low_policy.update(replay_data)
             self.n_update += 1
 
@@ -72,8 +85,7 @@ class BCTrainer():
                     success_rate = self.evaluate(env)
                     self.success_rates.append(success_rate)
                     print(f"🤯eval🤯 timestep: {self.n_update} | success_rate mean : {success_rate}")
-                    print(self.success_rates,success_rate)
-                    exit()
+
                     if max(self.success_rates) == success_rate:
                         self.save('best')
                     if self.wandb_record:
@@ -90,8 +102,21 @@ class BCTrainer():
             rewards = d4rl_evaluate(env,self.low_policy,self.eval_episodes)
             return rewards
         elif self.eval_env == "rlbench":
-            success_rate = rlbench_evaluate(env,self.low_policy,self.eval_episodes)
+            success_rate,frames = rlbench_evaluate(env,self.low_policy,self.eval_episodes)
+            if self.video_path:
+                height, width, layers  = list(frames.values())[0][0].shape
+                size = (width,height)
+                fps = 15
+                
+                for k,v in frames.items():
+                    file_name = str(self.n_update) + "_" + k + ".mp4" 
+                    video_path = os.path.join(self.video_path,file_name)
+                    
+                    print("saving: ",file_name)
+                    save_video(video_path,v)
             return success_rate
+        
+
 
         
 
@@ -101,11 +126,12 @@ class BCTrainer():
         self.low_policy.save(save_path)
 
     def record(self,info):
-        loss = info['decoder/mse_loss']
-
+        mse_loss = info['decoder/mse_loss']
+        ce_loss = info['decoder/ce_loss']
         if self.wandb_record:
             self.wandb_logger.log({
-                "mse loss": loss
+                "mse loss": mse_loss,
+                "ce loss": ce_loss
                 }
             )
 
